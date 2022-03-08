@@ -94,54 +94,75 @@ function init() {
 
     // Object Shape
     document.getElementById("line").addEventListener("click",function() {
-      state = "line";
+      if (state != "line") {
+        state = "line";
+        linefunction(vBuffer,cBuffer);
+        console.log("State change to "+state);
+      }
     });
     document.getElementById("triangle").addEventListener("click",function() {
-      state = "triangle";
+      if (state != "triangle") {
+        state = "triangle";
+        trianglefunction(vBuffer,cBuffer);
+        console.log("State change to "+state);
+      }
     });
     document.getElementById("square").addEventListener("click",function() {
       if (state != "square") {
         state = "square";
-      squarefunction(vBuffer,cBuffer);
-    }
+        squarefunction(vBuffer,cBuffer);
+        console.log("State change to "+state);
+      }
     });
     
+    canvas.addEventListener("mousedown", function(event){
+      if (state == "line") {
+        
+      } else if (state == "square") {
+        gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer);
+        if(first) {
+          // set up vectors to create an image
+          first = false;
+          gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer)
+          t[0] = vec2(2*event.clientX/canvas.width-1,
+            2*(canvas.height-event.clientY)/canvas.height-1);
+          console.log(t);
+        }
+    
+        else {
+          // set end points of rectangle
+          first = true;
+          t[2] = vec2(2*event.clientX/canvas.width-1,
+            2*(canvas.height-event.clientY)/canvas.height-1);
+          t[1] = vec2(t[0][0], t[2][1]);
+          t[3] = vec2(t[2][0], t[0][1]);
+          // create image
+          for(var i=0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
+          index += 4;
+    
+          // adding colors
+          gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer);
+          var tt = vec4(colors[cIndex]);
+          for(var i=0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 16*(index-4+i), flatten(tt));
+          console.log(t);
+        }
+      }
+    });
     
 }
 
+
+function linefunction(vBuffer,cBuffer) {
+  render();
+  function render() {
+    gl.clear( gl.COLOR_BUFFER_BIT );
+      for(var i = 0; i<index; i+=4)
+          gl.drawArrays( gl.TRIANGLE_FAN, i, 4 );
+      requestAnimationFrame(render);
+  }
+}
+function trianglefunction(vBuffer,cBuffer) {}
 function squarefunction(vBuffer,cBuffer) {
-  canvas.addEventListener("mousedown", function(event){
-    console.log(state);  
-    if (state == "square") {
-      gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer);
-      if(first) {
-        // set up vectors to create an image
-        first = false;
-        gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer)
-        t[0] = vec2(2*event.clientX/canvas.width-1,
-          2*(canvas.height-event.clientY)/canvas.height-1);
-        console.log(t);
-      }
-
-      else {
-        // set end points of rectangle
-        first = true;
-        t[2] = vec2(2*event.clientX/canvas.width-1,
-          2*(canvas.height-event.clientY)/canvas.height-1);
-        t[1] = vec2(t[0][0], t[2][1]);
-        t[3] = vec2(t[2][0], t[0][1]);
-        // create image
-        for(var i=0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
-        index += 4;
-
-        // adding colors
-        gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer);
-        var tt = vec4(colors[cIndex]);
-        for(var i=0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 16*(index-4+i), flatten(tt));
-        console.log(t);
-      }
-    }
-  });
   render();
   function render() {
     gl.clear( gl.COLOR_BUFFER_BIT );
