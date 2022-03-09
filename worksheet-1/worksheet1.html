@@ -22,24 +22,22 @@
         </select>
 </div>
 <input type="button" id="clear" value="Clear">
+<p>Fathan Muhammad - 2006486090</p>
+<p>Tugas: Membuat code interactive canvas (shapes dan colors)</p>
+<p>Razita Afrina Nuriyan - 2006529360</p>
+<p>Tugas: Membuat frontend program</p>
 
 <script id="vertex-shader" type="x-shader/x-vertex">
     #version 300 es
 
 in vec4 aPosition;
 in vec4 aColor;
-uniform float uTheta;
 out vec4 vColor;
 
 void main()
 {
-    float s = sin(uTheta);
-    float c = cos(uTheta);
 
-    gl_Position.x = -s*aPosition.y + c*aPosition.x;
-    gl_Position.y =  s*aPosition.x + c*aPosition.y;
-    gl_Position.z = 0.0;
-    gl_Position.w = 1.0;
+    gl_Position = aPosition;
     gl_PointSize = 10.0;
     vColor = aColor;
 }

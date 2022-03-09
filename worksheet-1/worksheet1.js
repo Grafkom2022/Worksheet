@@ -44,13 +44,10 @@ var positionLoc_square;
 var positionLoc_pentagon;
 var cBuffer;
 var colorLoc;
-var thetaLoc_line;
-var thetaLoc_triangle;
-var thetaLoc_square;
-var thetaLoc_pentagon;
 
 init();
 
+// initialize VBO
 function initvBuffer() {
   vBuffer_line = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer_line);
@@ -65,6 +62,7 @@ function initvBuffer() {
   gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer_pentagon);
   gl.bufferData(gl.ARRAY_BUFFER, 8*maxNumPositions, gl.STATIC_DRAW);
 }
+
 function init() {
     canvas = document.getElementById("gl-canvas");
 
@@ -87,6 +85,7 @@ function init() {
     initvBuffer();
     
     // Can set this one as empty value(?) but still work
+    // retrieve position location and enable vertex
     var positionLoc_line = gl.getAttribLocation(program_line, "aPosition");
     gl.vertexAttribPointer(positionLoc_line, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(positionLoc_line);
@@ -109,19 +108,14 @@ function init() {
     colorLoc = gl.getAttribLocation( program_line, "aColor");
     gl.vertexAttribPointer(colorLoc, 4 /* read vec4 values */, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(colorLoc);
-    
-    // configure uniform variable
-    thetaLoc_line = gl.getUniformLocation(program_line, "uTheta");
-    thetaLoc_triangle = gl.getUniformLocation(program_triangle, "uTheta");
-    thetaLoc_square = gl.getUniformLocation(program_square, "uTheta");
-    thetaLoc_pentagon = gl.getUniformLocation(program_pentagon, "uTheta");
 
+    // set color index
     document.getElementById("mymenu").addEventListener("click", function() {
       cIndex = this.selectedIndex;
     });
     
     document.getElementById("clear").addEventListener("click",function() {
-      // reinitialize every VBO
+      // reinitialize every VBO to clear canvas
       initvBuffer();
     });
 
@@ -159,6 +153,7 @@ function init() {
       if (state == "line") {
         gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_line);
         if(pointstate == 0) {
+          // create start point
           pointstate = 1;
           gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_line)
           t[0] = vec2(2*event.clientX/canvas.width-1,
@@ -166,12 +161,14 @@ function init() {
         }
 
         else {
+          // create last point
           pointstate = 0;
           t[1] = vec2(2*event.clientX/canvas.width-1,
             2*(canvas.height-event.clientY)/canvas.height-1);
           for(var i=0; i<2; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
           index += maxpoints; // choose index that is  >= points for render iteration
 
+          // load colors to buffer
           gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer);
           var tt = vec4(colors[cIndex]);
           for(var i=0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 16*(index-maxpoints+i), flatten(tt));
@@ -196,7 +193,7 @@ function init() {
           }
           index += maxpoints; // choose index that is  >= points for render iteration
     
-          // adding colors
+          // load colors to buffer
           gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer);
           var tt = vec4(colors[cIndex]);
           for(var i=0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 16*(index-maxpoints+i), flatten(tt));
@@ -243,7 +240,7 @@ function init() {
           }
           index += maxpoints; // choose index that is  >= points for render iteration
     
-          // adding colors
+          // load colors to buffer
           gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer);
           var tt = vec4(colors[cIndex]);
           for(var i=0; i<5; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 16*(index-maxpoints  +i), flatten(tt));
@@ -255,6 +252,7 @@ function init() {
 }
 function render() {
   gl.clear( gl.COLOR_BUFFER_BIT );
+  // render shape berdasarkan programnya masing-masing
   gl.useProgram( program_line );
   gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_line );
   gl.vertexAttribPointer( positionLoc_line, 2, gl.FLOAT, false, 0, 0 );
