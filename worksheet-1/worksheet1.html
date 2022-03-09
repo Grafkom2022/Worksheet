@@ -6,6 +6,7 @@
             <input type='button' id='line' value="Line">
             <input type='button' id='triangle' value="Triangle">
             <input type='button' id='square' value="Square">
+            <input type='button' id='pentagon' value="Pentagon">
         </div>
         <select id="mymenu" size="7">
             <option value="0">Black</option>
@@ -15,6 +16,9 @@
             <option value="4">Blue</option>
             <option value="5">Magenta</option>
             <option value="6">Cyan</option>
+            <option value="7">Purple</option>
+            <option value="8">Teal</option>
+            <option value="9">Olive</option>
         </select>
 </div>
 <input type="button" id="clear" value="Clear">
@@ -24,12 +28,18 @@
 
 in vec4 aPosition;
 in vec4 aColor;
-
+uniform float uTheta;
 out vec4 vColor;
 
 void main()
 {
-    gl_Position = aPosition;
+    float s = sin(uTheta);
+    float c = cos(uTheta);
+
+    gl_Position.x = -s*aPosition.y + c*aPosition.x;
+    gl_Position.y =  s*aPosition.x + c*aPosition.y;
+    gl_Position.z = 0.0;
+    gl_Position.w = 1.0;
     gl_PointSize = 10.0;
     vColor = aColor;
 }
