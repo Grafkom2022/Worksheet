@@ -27,17 +27,17 @@ var colors = [
 ];
 var state;  // Object shape state
 var point=0;  // current point
-var maxpoint; // max num of points click to make an object
-var program;
-var program1;
-var vBuffer;
-var vBuffer1;
-var positionLoc;
-var positionLoc1;
+var program_line;
+var program_triangle;
+var program_square;
+var vBuffer_line;
+var vBuffer_triangle;
+var vBuffer_square;
+var positionLoc_line;
+var positionLoc_triangle;
+var positionLoc_square;
 var cBuffer;
-var cBuffer1;
 var colorLoc;
-var colorLoc1;
 
 init();
 
@@ -55,36 +55,42 @@ function init() {
     //
     //  Load shaders and initialize attribute buffers
     //
-    program = initShaders(gl, "vertex-shader", "fragment-shader");
-    program1 = initShaders(gl, "vertex-shader", "fragment-shader");
-    gl.useProgram(program1)
-    vBuffer = gl.createBuffer();
-    vBuffer1 = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer1);
+    program_line = initShaders(gl, "vertex-shader", "fragment-shader");
+    program_triangle = initShaders(gl, "vertex-shader", "fragment-shader");
+    program_square = initShaders(gl, "vertex-shader", "fragment-shader");
+
+    // VBO for each shapes
+    vBuffer_line = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer_line);
     gl.bufferData(gl.ARRAY_BUFFER, 8*maxNumPositions, gl.STATIC_DRAW);
-    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
+    vBuffer_triangle = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer_triangle);
+    gl.bufferData(gl.ARRAY_BUFFER, 8*maxNumPositions, gl.STATIC_DRAW);
+    vBuffer_square = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer_square);
     gl.bufferData(gl.ARRAY_BUFFER, 8*maxNumPositions, gl.STATIC_DRAW);
     
-    positionLoc = gl.getAttribLocation( program, "aPosition");
-    positionLoc1 = gl.getAttribLocation( program1, "aPosition");
-    gl.vertexAttribPointer(positionLoc1, 2 /* read vec2 values */, gl.FLOAT, true, 0, 0);
-    gl.enableVertexAttribArray(positionLoc1);
-    gl.vertexAttribPointer(positionLoc, 2 /* read vec2 values */, gl.FLOAT, true, 0, 0);
-    gl.enableVertexAttribArray(positionLoc);
+    // Can set this one as empty value(?) but still work
+    var positionLoc_line = gl.getAttribLocation(program_line, "aPosition");
+    gl.vertexAttribPointer(positionLoc_line, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(positionLoc_line);
+    var positionLoc_triangle = gl.getAttribLocation(program_triangle, "aPosition");
+    gl.vertexAttribPointer(positionLoc_triangle, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(positionLoc_triangle);
+    var positionLoc_square = gl.getAttribLocation(program_square, "aPosition");
+    gl.vertexAttribPointer(positionLoc_square, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(positionLoc_square);
     
+    // Buffer for colors
     cBuffer = gl.createBuffer();
-    cBuffer1 = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer1);
-    gl.bufferData(gl.ARRAY_BUFFER, 16*maxNumPositions, gl.STATIC_DRAW );
     gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, 16*maxNumPositions, gl.STATIC_DRAW );
     
-    colorLoc = gl.getAttribLocation( program, "aColor");
-    colorLoc1 = gl.getAttribLocation( program, "aColor");
-    gl.vertexAttribPointer(colorLoc1, 4 /* read vec4 values */, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(colorLoc1);
+    // Points to color palette
+    colorLoc = gl.getAttribLocation( program_line, "aColor");
     gl.vertexAttribPointer(colorLoc, 4 /* read vec4 values */, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(colorLoc);
+    
 
     var m = document.getElementById("mymenu");
 
@@ -95,7 +101,7 @@ function init() {
     
     clear.addEventListener("click",function() {
       console.log("ClearEventListener");
-      gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer);
+      gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_triangle);
       t[0] = vec2(-1,1);
       t[2] = vec2(1,-1);
       t[1] = vec2(t[0][0], t[2][1]);
@@ -105,25 +111,22 @@ function init() {
       console.log(t);
       
       gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer);
-      var tt = vec4(colors[7]);
+      var tt = vec4(colors[3]);
       for(var i=0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 16*(index-4+i), flatten(tt));
-      rendersquare();
     });
 
     // Shape toggle
     document.getElementById("line").addEventListener("click",function() {
+      first = true;
       if (state != "line") {
         state = "line";
-        rendersquare();
         console.log("State change to "+state);
       }
     });
     document.getElementById("triangle").addEventListener("click",function() {
-      
       point = 0;
       if (state != "triangle") {
         state = "triangle";
-        render();
         console.log("State change to "+state);
       }
     });
@@ -131,26 +134,45 @@ function init() {
       first = true;
       if (state != "square") {
         state = "square";
-        render();
         console.log("State change to "+state);
       }
     });
     
     canvas.addEventListener("mousedown", function(event){
-      if (state == "triangle") {
+      if (state == "line") {
+        console.log("click square");
+        gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_line);
+        if(first) {
+          first = false;
+          gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_line)
+          t[0] = vec2(2*event.clientX/canvas.width-1,
+            2*(canvas.height-event.clientY)/canvas.height-1);
+        }
+
+        else {
+          first = true;
+          t[1] = vec2(2*event.clientX/canvas.width-1,
+            2*(canvas.height-event.clientY)/canvas.height-1);
+          for(var i=0; i<2; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
+          index += 4;
+
+          gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer);
+          var tt = vec4(colors[cIndex]);
+          for(var i=0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 16*(index-4+i), flatten(tt));
+        }
+      } else if (state == "triangle") {
+        gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_triangle);
         if(point < 2) {
+          gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_triangle); 
           // create first 2 points
-          gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer)
           t[point] = vec2(2*event.clientX/canvas.width-1,
             2*(canvas.height-event.clientY)/canvas.height-1);
             point++;
-          console.log(t);
         } else  {
           // create last point
           t[point] = vec2(2*event.clientX/canvas.width-1,
             2*(canvas.height-event.clientY)/canvas.height-1);
           point=0;
-          console.log(t);
           
           // load points to buffer
           for(var i=0; i<3; i++){
@@ -159,77 +181,59 @@ function init() {
           index += 4; // must plus 4 to disconnect triangles
     
           // adding colors
-          gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer1);
+          gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer);
           var tt = vec4(colors[cIndex]);
           for(var i=0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 16*(index-4+i), flatten(tt));
-          
+          console.log(tt);
         }
       } else if (state == "square") {
+        console.log("click square");
+        gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_square);
         if(first) {
-          // set up vectors to create an image
           first = false;
-          gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer)
+          gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_square)
           t[0] = vec2(2*event.clientX/canvas.width-1,
             2*(canvas.height-event.clientY)/canvas.height-1);
-          console.log(t);
         }
-    
+
         else {
-          // set end points of rectangle
           first = true;
           t[2] = vec2(2*event.clientX/canvas.width-1,
             2*(canvas.height-event.clientY)/canvas.height-1);
           t[1] = vec2(t[0][0], t[2][1]);
           t[3] = vec2(t[2][0], t[0][1]);
-          // load points to buffer
-          for(var i=0; i<4; i++){
-            gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
-          }
+          for(var i=0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
           index += 4;
-    
-          // adding colors
+
           gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer);
           var tt = vec4(colors[cIndex]);
           for(var i=0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 16*(index-4+i), flatten(tt));
-          console.log(t);
         }
       }
     });
+    render();
     
 }
-function rendertriangle() {
-  gl.clear( gl.COLOR_BUFFER_BIT );
-    for(var i = 0; i<index; i+=4){
-        gl.drawArrays( gl.TRIANGLE_FAN, i, 3 );
-      console.log(i);
-    }
-  requestAnimationFrame(rendertriangle);
-}
-
-function rendersquare() {
-  gl.clear( gl.COLOR_BUFFER_BIT );
-    for(var i = 0; i<index; i+=4)
-        gl.drawArrays( gl.TRIANGLE_FAN, i, 4 );
-  requestAnimationFrame(rendersquare);
-}
-
 function render() {
+  console.log("render");
   gl.clear( gl.COLOR_BUFFER_BIT );
+  gl.useProgram( program_line );
+  gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_line );
+  gl.vertexAttribPointer( positionLoc_line, 2, gl.FLOAT, false, 0, 0 );
+  gl.enableVertexAttribArray( positionLoc_line );
+  for(var i = 0; i<index; i+=4) gl.drawArrays( gl.LINES, i, 2 );
 
-  gl.useProgram( program1 );
-  gl.enableVertexAttribArray( positionLoc1 );
-  gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer1 );
-  gl.vertexAttribPointer( positionLoc1, 2, gl.FLOAT, false, 0, 0 );
-  for(var i = 0; i<index1; i+=4)
-    gl.drawArrays( gl.TRIANGLE_FAN, i, 3 );
+  gl.useProgram( program_triangle );
+  gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_triangle );
+  gl.vertexAttribPointer( positionLoc_triangle, 2, gl.FLOAT, false, 0, 0 );
+  gl.enableVertexAttribArray( positionLoc_triangle );
+  for(var i = 0; i<index; i+=4) gl.drawArrays( gl.TRIANGLE_FAN, i, 3 );
 
-  gl.useProgram( program );
-
-  gl.enableVertexAttribArray( positionLoc );
-  gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
-  gl.vertexAttribPointer( positionLoc, 2, gl.FLOAT, false, 0, 0 );
-  for(var i = 0; i<index; i+=4)
-        gl.drawArrays( gl.TRIANGLE_FAN, i, 4 );
+  gl.useProgram( program_square );
+  gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_square );
+  gl.vertexAttribPointer( positionLoc_square, 2, gl.FLOAT, false, 0, 0 );
+  gl.enableVertexAttribArray( positionLoc_square );
+  for(var i = 0; i<index; i+=4) gl.drawArrays( gl.TRIANGLE_FAN, i, 4 );
         
   requestAnimationFrame(render);
 }
