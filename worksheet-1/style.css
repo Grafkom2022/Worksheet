@@ -1,0 +1,55 @@
+html {
+    width: 512px;
+    height: 512px;
+    text-align: center;
+}
+#title {
+    text-align: center;
+    width: 512px;
+}
+
+#colors input {
+    color: transparent;
+    width: 30px;
+    height: 30px;
+}
+
+#colors input[value='0'] {
+    background-color: black;
+}
+#colors input[value='1'] {
+    background-color: red;
+}
+#colors input[value='2'] {
+    background-color: yellow;
+}
+#colors input[value='3'] {
+    background-color: green;
+}
+#colors input[value='4'] {
+    background-color: blue;
+}
+#colors input[value='5'] {
+    background-color: magenta;
+}
+#colors input[value='6'] {
+    background-color: cyan;
+}
+#colors input[value='7'] {
+    background-color: purple;
+}
+#colors input[value='8'] {
+    background-color: teal;
+}
+#colors input[value='9'] {
+    background-color: olive;
+}
+
+i {
+    cursor: pointer;
+    font-size: 3rem;
+}
+
+#clear {
+    font-size: 1.25rem;
+}
