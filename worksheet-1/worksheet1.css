@@ -1,16 +1,29 @@
 .icon-input-btn, .color-selector input[type="button"], #clear{
     display: inline-block;
     position: relative;
-    margin: 0.5em;
+    margin: 0.5rem;
 }
 .icon-input-btn input[type="button"], .color-selector input[type="button"]{
-    padding: 0.5em 1em;
+    padding: 0.5rem 1rem;
 }
 .icon-input-btn i{
     display: inline-block;
     position: absolute;
     left: 30%;
     top: 30%;
+}
+.thickness-selector input[type="button"]{
+    margin: 0.5rem;
+    font-size: 1.5rem;
+}
+#thin-line{
+    font-weight: lighter;
+}
+#medium-line{
+    font-weight: bolder;
+}
+#thick-line{
+    font-weight: 1000;
 }
 #black{
     background-color: black;

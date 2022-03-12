@@ -28,6 +28,7 @@ var colors = [
 ];
 var state;  // Object shape state
 var pointstate = 0;  // current point state
+var thickness = "medium"; // Line thickness
 var polygonnum;
 
 var program_line;
@@ -109,61 +110,36 @@ function init() {
     gl.vertexAttribPointer(colorLoc, 4 /* read vec4 values */, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(colorLoc);
 
-    // set color index
-    /*document.getElementById("mymenu").addEventListener("click", function() {
-      cIndex = this.selectedIndex;
-    });*/
-
     // Color toggle
     document.getElementById("black").addEventListener("click",function() {
-      if (cIndex != 0) {
-        cIndex = 0;
-      }
+      cIndex = 0;
     });
     document.getElementById("red").addEventListener("click",function() {
-      if (cIndex != 1) {
-        cIndex = 1;
-      }
+      cIndex = 1;
     });
     document.getElementById("yellow").addEventListener("click",function() {
-      if (cIndex != 2) {
-        cIndex = 2;
-      }
+      cIndex = 2;
     });
     document.getElementById("green").addEventListener("click",function() {
-      if (cIndex != 3) {
-        cIndex = 3;
-      }
+      cIndex = 3;
     });
     document.getElementById("blue").addEventListener("click",function() {
-      if (cIndex != 4) {
-        cIndex = 4;
-      }
+      cIndex = 4;
     });
     document.getElementById("magenta").addEventListener("click",function() {
-      if (cIndex != 5) {
-        cIndex = 5;
-      }
+      cIndex = 5;
     });
     document.getElementById("cyan").addEventListener("click",function() {
-      if (cIndex != 6) {
-        cIndex = 6;
-      }
+      cIndex = 6;
     });
     document.getElementById("purple").addEventListener("click",function() {
-      if (cIndex != 7) {
-        cIndex = 7;
-      }
+      cIndex = 7;
     });
     document.getElementById("teal").addEventListener("click",function() {
-      if (cIndex != 8) {
-        cIndex = 8;
-      }
+      cIndex = 8;
     });
     document.getElementById("olive").addEventListener("click",function() {
-      if (cIndex != 9) {
-        cIndex = 9;
-      }
+      cIndex = 9;
     });
     
     document.getElementById("clear").addEventListener("click",function() {
@@ -200,6 +176,33 @@ function init() {
         console.log("State change to "+state);
       }
     });
+
+    // Thickness toggle
+    document.getElementById("thin-line").addEventListener("click", function() {
+      if (thickness != "thin") {
+        thickness = "thin"
+      }
+    });
+    document.getElementById("medium-line").addEventListener("click", function() {
+      if (thickness != "medium") {
+        thickness = "medium"
+      }
+    });
+    document.getElementById("thick-line").addEventListener("click", function() {
+      if (thickness != "thick") {
+        thickness = "thick"
+      }
+    });
+
+    // Create 2 lines to make thicker lines
+    function drawThick(d) {
+      var gradient = (t[1][1] - t[0][1])/(t[1][0] - t[0][0]);
+      var perpendicularGradient = -1/gradient;
+      t[2] = vec2(t[0][0] + Math.sqrt(d/(1 + Math.pow(perpendicularGradient, 2))), 
+        Math.sqrt(d/(1 + Math.pow(perpendicularGradient, 2))) * perpendicularGradient + t[0][1]);
+      t[3] = vec2(t[1][0] + Math.sqrt(d/(1 + Math.pow(perpendicularGradient, 2))), 
+        Math.sqrt(d/(1 + Math.pow(perpendicularGradient, 2))) * perpendicularGradient + t[1][1]);
+    }
     
     canvas.addEventListener("mousedown", function(event){
       if (state == "line") {
@@ -217,9 +220,18 @@ function init() {
           pointstate = 0;
           t[1] = vec2(2*event.clientX/canvas.width-1,
             2*(canvas.height-event.clientY)/canvas.height-1);
-          for(var i=0; i<2; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
-          index += maxpoints; // choose index that is  >= points for render iteration
-
+          if (thickness == "thin") {
+            for(var i=0; i<2; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
+            index += maxpoints; // choose index that is  >= points for render iteration
+          } else if (thickness == "medium") {
+            drawThick(0.00002);
+            for (var i =0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
+            index += maxpoints;
+          } else if (thickness == "thick") {
+            drawThick(0.00004);
+            for (var i =0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
+            index += maxpoints;
+          }
           // load colors to buffer
           gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer);
           var tt = vec4(colors[cIndex]);
@@ -310,6 +322,7 @@ function render() {
   gl.vertexAttribPointer( positionLoc_line, 2, gl.FLOAT, false, 0, 0 );
   gl.enableVertexAttribArray( positionLoc_line );
   for(var i = 0; i<index; i+=maxpoints) gl.drawArrays( gl.LINES, i, 2 );
+  for(var i = 0; i<index; i+=maxpoints) gl.drawArrays( gl.LINES, i + 2, 4 );
 
   gl.useProgram( program_triangle );
   gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_triangle );
