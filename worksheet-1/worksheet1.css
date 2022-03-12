@@ -1,0 +1,44 @@
+.icon-input-btn, .color-selector input[type="button"], #clear{
+    display: inline-block;
+    position: relative;
+    margin: 0.5em;
+}
+.icon-input-btn input[type="button"], .color-selector input[type="button"]{
+    padding: 0.5em 1em;
+}
+.icon-input-btn i{
+    display: inline-block;
+    position: absolute;
+    left: 30%;
+    top: 30%;
+}
+#black{
+    background-color: black;
+}
+#red{
+    background-color: red;
+}
+#yellow{
+    background-color: yellow;
+}
+#green{
+    background-color: lime;
+}
+#blue{
+    background-color: blue;
+}
+#magenta{
+    background-color: magenta;
+}
+#cyan{
+    background-color: cyan;
+}
+#purple{
+    background-color: purple;
+}
+#teal{
+    background-color: teal;
+}
+#olive{
+    background-color: olive;
+}

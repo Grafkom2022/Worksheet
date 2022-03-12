@@ -110,8 +110,60 @@ function init() {
     gl.enableVertexAttribArray(colorLoc);
 
     // set color index
-    document.getElementById("mymenu").addEventListener("click", function() {
+    /*document.getElementById("mymenu").addEventListener("click", function() {
       cIndex = this.selectedIndex;
+    });*/
+
+    // Color toggle
+    document.getElementById("black").addEventListener("click",function() {
+      if (cIndex != 0) {
+        cIndex = 0;
+      }
+    });
+    document.getElementById("red").addEventListener("click",function() {
+      if (cIndex != 1) {
+        cIndex = 1;
+      }
+    });
+    document.getElementById("yellow").addEventListener("click",function() {
+      if (cIndex != 2) {
+        cIndex = 2;
+      }
+    });
+    document.getElementById("green").addEventListener("click",function() {
+      if (cIndex != 3) {
+        cIndex = 3;
+      }
+    });
+    document.getElementById("blue").addEventListener("click",function() {
+      if (cIndex != 4) {
+        cIndex = 4;
+      }
+    });
+    document.getElementById("magenta").addEventListener("click",function() {
+      if (cIndex != 5) {
+        cIndex = 5;
+      }
+    });
+    document.getElementById("cyan").addEventListener("click",function() {
+      if (cIndex != 6) {
+        cIndex = 6;
+      }
+    });
+    document.getElementById("purple").addEventListener("click",function() {
+      if (cIndex != 7) {
+        cIndex = 7;
+      }
+    });
+    document.getElementById("teal").addEventListener("click",function() {
+      if (cIndex != 8) {
+        cIndex = 8;
+      }
+    });
+    document.getElementById("olive").addEventListener("click",function() {
+      if (cIndex != 9) {
+        cIndex = 9;
+      }
     });
     
     document.getElementById("clear").addEventListener("click",function() {
