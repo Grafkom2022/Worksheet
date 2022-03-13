@@ -33,6 +33,30 @@
     width: 100%;
     margin: 0.25rem;
 }
+.modal-backdrop{
+    opacity: 0 !important;
+}
+.modal-header{
+    background-color: #202020;
+    color: white;
+}
+.close, .close:hover{
+    color: white;
+}
+li{
+    font-size: 0.9em;
+}
+#myToast{
+    left: 50%;
+    bottom: 0.25rem;
+    position: fixed;
+    transform: translate(-50%, 0px);
+    z-index: 9999;
+}
+.toast-body{
+    background-color: #202020;
+    color: white;
+}
 #thin-line{
     font-weight: lighter;
 }

@@ -84,7 +84,7 @@ function init() {
     if (!gl) alert("WebGL 2.0 isn't available");
 
     gl.viewport(0, 0, canvas.width, canvas.height); // set the canvas viewport
-    gl.clearColor(0.8, 0.8, 0.8, 1.0);  // set the canvas color
+    gl.clearColor(1.0, 1.0, 1.0, 1.0);  // set the canvas color
     gl.clear(gl.COLOR_BUFFER_BIT);  // clear the color buffer
 
     //
@@ -158,6 +158,7 @@ function init() {
     document.getElementById("clear").addEventListener("click",function() {
       // reinitialize every VBO to clear canvas
       initvBuffer();
+      animation = "";
     });
 
     // Shape toggle
@@ -234,9 +235,7 @@ function init() {
           gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_line)
           t[0] = vec2(2*event.clientX/canvas.width-1,
             2*(canvas.height-event.clientY)/canvas.height-1);
-        }
-
-        else {
+        } else {
           // create last point
           pointstate = 0;
           t[1] = vec2(2*event.clientX/canvas.width-1,
@@ -245,11 +244,11 @@ function init() {
             for(var i=0; i<2; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
             index += maxpoints; // choose index that is  >= points for render iteration
           } else if (thickness == "medium") {
-            drawThick(0.0015);
+            drawThick(0.001);
             for (var i =0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
             index += maxpoints;
           } else if (thickness == "thick") {
-            drawThick(0.003);
+            drawThick(0.002);
             for (var i =0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
             index += maxpoints;
           }
@@ -266,7 +265,7 @@ function init() {
           t[pointstate] = vec2(2*event.clientX/canvas.width-1,
             2*(canvas.height-event.clientY)/canvas.height-1);
             pointstate++;
-        } else  {
+        } else {
           // create last point
           t[pointstate] = vec2(2*event.clientX/canvas.width-1,
             2*(canvas.height-event.clientY)/canvas.height-1);
@@ -290,9 +289,7 @@ function init() {
           gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_square)
           t[0] = vec2(2*event.clientX/canvas.width-1,
             2*(canvas.height-event.clientY)/canvas.height-1);
-        }
-
-        else {
+        } else {
           pointstate = 0;
           t[2] = vec2(2*event.clientX/canvas.width-1,
             2*(canvas.height-event.clientY)/canvas.height-1);
@@ -313,7 +310,7 @@ function init() {
           t[pointstate] = vec2(2*event.clientX/canvas.width-1,
             2*(canvas.height-event.clientY)/canvas.height-1);
             pointstate++;
-        } else  {
+        } else {
           // create last point
           t[pointstate] = vec2(2*event.clientX/canvas.width-1,
             2*(canvas.height-event.clientY)/canvas.height-1);
@@ -330,6 +327,8 @@ function init() {
           var tt = vec4(colors[cIndex]);
           for(var i=0; i<5; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 16*(index-maxpoints  +i), flatten(tt));
         }
+      } else {
+        $("#myToast").toast("show");
       }
     });
     render();
