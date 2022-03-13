@@ -49,6 +49,36 @@
     <input type="button" id="medium-line" class="btn btn-primary" value="—">
     <input type="button" id="thick-line" class="btn btn-primary" value="—">
 </div>
+<div class="animation-selector">
+    <span class="icon-input-btn">
+        <i class="bi-arrow-clockwise"></i>
+        <input type="button" id="clockwise" class="btn btn-primary" value=" ">
+    </span>
+    <span class="icon-input-btn">
+        <i class="bi-arrow-counterclockwise"></i>
+        <input type="button" id="counterclockwise" class="btn btn-primary" value=" ">
+    </span>
+    <span class="icon-input-btn">
+        <i class="bi-arrow-down-up"></i>
+        <input type="button" id="down-up" class="btn btn-primary" value=" ">
+    </span>
+    <span class="icon-input-btn">
+        <i class="bi-arrow-left-right"></i>
+        <input type="button" id="left-right" class="btn btn-primary" value=" ">
+    </span>
+    <span class="icon-input-btn">
+        <i class="bi-zoom-in"></i>
+        <input type="button" id="zoom-in" class="btn btn-primary" value=" ">
+    </span>
+    <span class="icon-input-btn">
+        <i class="bi-zoom-out"></i>
+        <input type="button" id="zoom-out" class="btn btn-primary" value=" ">
+    </span>
+    <span class="icon-input-btn">
+        <i class="bi-pause"></i>
+        <input type="button" id="pause" class="btn btn-primary" value=" ">
+    </span>
+</div>
 <input type="button" id="clear" class="btn btn-primary" value="Clear">
 <div>
     <canvas id="gl-canvas" width="512" height="512"</canvas> </div> <div>
@@ -67,10 +97,19 @@ in vec4 aPosition;
 in vec4 aColor;
 out vec4 vColor;
 
+uniform float uTheta;
+
 void main()
 {
 
-    gl_Position = aPosition;
+    float s = sin(uTheta);
+    float c = cos(uTheta);
+
+    gl_Position.x = -s*aPosition.y + c*aPosition.x;
+    gl_Position.y =  s*aPosition.x + c*aPosition.y;
+    gl_Position.z = 0.0;
+    gl_Position.w = 1.0;
+    
     gl_PointSize = 10.0;
     vColor = aColor;
 }

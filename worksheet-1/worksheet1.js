@@ -29,6 +29,8 @@ var colors = [
 var state;  // Object shape state
 var pointstate = 0;  // current point state
 var thickness = "medium"; // Line thickness
+var animation; // Animation type
+var direction;
 var polygonnum;
 
 var program_line;
@@ -45,6 +47,9 @@ var positionLoc_square;
 var positionLoc_pentagon;
 var cBuffer;
 var colorLoc;
+
+var theta = 0.0;
+var thetaLoc;
 
 init();
 
@@ -82,6 +87,8 @@ function init() {
     program_square = initShaders(gl, "vertex-shader", "fragment-shader");
     program_pentagon = initShaders(gl, "vertex-shader", "fragment-shader");
 
+    //gl.useProgram( program );
+
     // initialize VBO for each shapes
     initvBuffer();
     
@@ -99,6 +106,8 @@ function init() {
     var positionLoc_pentagon = gl.getAttribLocation(program_pentagon, "aPosition");
     gl.vertexAttribPointer(positionLoc_pentagon, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(positionLoc_pentagon);
+
+    //thetaLoc = gl.getUniformLocation(program, "uTheta");
     
     // Buffer for colors
     cBuffer = gl.createBuffer();
@@ -192,6 +201,31 @@ function init() {
       if (thickness != "thick") {
         thickness = "thick"
       }
+    });
+
+    //Animation toggle
+    document.getElementById("clockwise").addEventListener("click", function() {
+      animation = "rotation";
+      direction = false;
+    });
+    document.getElementById("counterclockwise").addEventListener("click", function() {
+      animation = "rotation";
+      direction = true;
+    });
+    document.getElementById("down-up").addEventListener("click", function() {
+      //
+    });
+    document.getElementById("left-right").addEventListener("click", function() {
+      //
+    });
+    document.getElementById("zoom-in").addEventListener("click", function() {
+      //
+    });
+    document.getElementById("zoom-out").addEventListener("click", function() {
+      //
+    });
+    document.getElementById("pause").addEventListener("click", function() {
+      //
     });
 
     // Create 2 lines to make thicker lines
@@ -316,6 +350,12 @@ function init() {
 }
 function render() {
   gl.clear( gl.COLOR_BUFFER_BIT );
+
+  if (animation = "rotation") {
+    theta += (direction ? 0.1 : -0.1);
+  }
+  gl.uniform1f(thetaLoc, theta);
+
   // render shape berdasarkan programnya masing-masing
   gl.useProgram( program_line );
   gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_line );
@@ -342,5 +382,8 @@ function render() {
   gl.enableVertexAttribArray( positionLoc_pentagon );
   for(var i = 0; i<index; i+=maxpoints) gl.drawArrays( gl.TRIANGLE_FAN, i, 5 );
         
-  requestAnimationFrame(render);
+  setTimeout(
+    function () {requestAnimationFrame(render);},
+    100
+  );
 }
