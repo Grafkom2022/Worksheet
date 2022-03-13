@@ -355,13 +355,13 @@ function init() {
 function render() {
   gl.clear( gl.COLOR_BUFFER_BIT );
 
-  if (animation = "rotation") {
+  // render shape berdasarkan programnya masing-masing
+  gl.useProgram( program_line );
+  thetaLoc = gl.getUniformLocation(program_line, "uTheta");
+  if (animation == "rotation") {
     theta += (direction ? 0.1 : -0.1);
   }
   gl.uniform1f(thetaLoc, theta);
-
-  // render shape berdasarkan programnya masing-masing
-  gl.useProgram( program_line );
   gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_line );
   gl.vertexAttribPointer( positionLoc_line, 2, gl.FLOAT, false, 0, 0 );
   gl.enableVertexAttribArray( positionLoc_line );
@@ -369,18 +369,33 @@ function render() {
   for(var i = 0; i<index; i+=maxpoints) gl.drawArrays( gl.LINES, i + 2, 4 );
 
   gl.useProgram( program_triangle );
+  thetaLoc = gl.getUniformLocation(program_triangle, "uTheta");
+  if (animation == "rotation") {
+    theta += (direction ? 0.1 : -0.1);
+  }
+  gl.uniform1f(thetaLoc, theta);
   gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_triangle );
   gl.vertexAttribPointer( positionLoc_triangle, 2, gl.FLOAT, false, 0, 0 );
   gl.enableVertexAttribArray( positionLoc_triangle );
   for(var i = 0; i<index; i+=maxpoints) gl.drawArrays( gl.TRIANGLE_FAN, i, 3 );
 
   gl.useProgram( program_square );
+  thetaLoc = gl.getUniformLocation(program_square, "uTheta");
+  if (animation == "rotation") {
+    theta += (direction ? 0.1 : -0.1);
+  }
+  gl.uniform1f(thetaLoc, theta);
   gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_square );
   gl.vertexAttribPointer( positionLoc_square, 2, gl.FLOAT, false, 0, 0 );
   gl.enableVertexAttribArray( positionLoc_square );
   for(var i = 0; i<index; i+=maxpoints) gl.drawArrays( gl.TRIANGLE_FAN, i, 4 );
   
   gl.useProgram( program_pentagon );
+  thetaLoc = gl.getUniformLocation(program_pentagon, "uTheta");
+  if (animation == "rotation") {
+    theta += (direction ? 0.1 : -0.1);
+  }
+  gl.uniform1f(thetaLoc, theta);
   gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_pentagon );
   gl.vertexAttribPointer( positionLoc_pentagon, 2, gl.FLOAT, false, 0, 0 );
   gl.enableVertexAttribArray( positionLoc_pentagon );
@@ -391,3 +406,4 @@ function render() {
     100
   );
 }
+
