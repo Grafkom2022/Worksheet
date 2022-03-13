@@ -230,11 +230,16 @@ function init() {
     // Create 2 lines to make thicker lines
     function drawThick(d) {
       var gradient = (t[1][1] - t[0][1])/(t[1][0] - t[0][0]);
-      var perpendicularGradient = -1/gradient;
-      t[2] = vec2(t[0][0] + Math.sqrt(d/(1 + Math.pow(perpendicularGradient, 2))), 
-        Math.sqrt(d/(1 + Math.pow(perpendicularGradient, 2))) * perpendicularGradient + t[0][1]);
-      t[3] = vec2(t[1][0] + Math.sqrt(d/(1 + Math.pow(perpendicularGradient, 2))), 
-        Math.sqrt(d/(1 + Math.pow(perpendicularGradient, 2))) * perpendicularGradient + t[1][1]);
+      if (gradient != 0) {
+        var perpendicularGradient = -1/gradient;
+        t[2] = vec2(t[0][0] + Math.sqrt(Math.pow(d, 2)/(1 + Math.pow(perpendicularGradient, 2))), 
+          Math.sqrt(d/(1 + Math.pow(perpendicularGradient, 2))) * perpendicularGradient + t[0][1]);
+        t[3] = vec2(t[1][0] + Math.sqrt(Math.pow(d, 2)/(1 + Math.pow(perpendicularGradient, 2))), 
+          Math.sqrt(d/(1 + Math.pow(perpendicularGradient, 2))) * perpendicularGradient + t[1][1]);
+      } else {
+        t[2] = vec2(t[0][0] + d, t[0][1]);
+        t[3] = vec2(t[1][0] + d, t[1][1]);
+      }
     }
     
     canvas.addEventListener("mousedown", function(event){
