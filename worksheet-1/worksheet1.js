@@ -163,48 +163,30 @@ function init() {
     // Shape toggle
     document.getElementById("line").addEventListener("click",function() {
       pointstate = 0;
-      if (state != "line") {
-        state = "line";
-        console.log("State change to "+state);
-      }
+      state = "line";
     });
     document.getElementById("triangle").addEventListener("click",function() {
       pointstate = 0;
-      if (state != "triangle") {
-        state = "triangle";
-        console.log("State change to "+state);
-      }
+      state = "triangle";
     });
     document.getElementById("square").addEventListener("click",function() {
       pointstate = 0;
-      if (state != "square") {
-        state = "square";
-        console.log("State change to "+state);
-      }
+      state = "square";
     });
     document.getElementById("pentagon").addEventListener("click",function() {
       pointstate = 0;
-      if (state != "pentagon") {
-        state = "pentagon";
-        console.log("State change to "+state);
-      }
+      state = "pentagon";
     });
 
     // Thickness toggle
     document.getElementById("thin-line").addEventListener("click", function() {
-      if (thickness != "thin") {
-        thickness = "thin"
-      }
+      thickness = "thin";
     });
     document.getElementById("medium-line").addEventListener("click", function() {
-      if (thickness != "medium") {
-        thickness = "medium"
-      }
+      thickness = "medium";
     });
     document.getElementById("thick-line").addEventListener("click", function() {
-      if (thickness != "thick") {
-        thickness = "thick"
-      }
+      thickness = "thick";
     });
 
     //Animation toggle
@@ -238,17 +220,9 @@ function init() {
 
     // Create 2 lines to make thicker lines
     function drawThick(d) {
-      var gradient = (t[1][1] - t[0][1])/(t[1][0] - t[0][0]);
-      if (gradient != 0) {
-        var perpendicularGradient = -1/gradient;
-        t[2] = vec2(t[0][0] + Math.sqrt(Math.pow(d, 2)/(1 + Math.pow(perpendicularGradient, 2))), 
-          Math.sqrt(d/(1 + Math.pow(perpendicularGradient, 2))) * perpendicularGradient + t[0][1]);
-        t[3] = vec2(t[1][0] + Math.sqrt(Math.pow(d, 2)/(1 + Math.pow(perpendicularGradient, 2))), 
-          Math.sqrt(d/(1 + Math.pow(perpendicularGradient, 2))) * perpendicularGradient + t[1][1]);
-      } else {
-        t[2] = vec2(t[0][0] + d, t[0][1]);
-        t[3] = vec2(t[1][0] + d, t[1][1]);
-      }
+      var length = Math.sqrt(Math.pow(t[1][0] - t[0][0], 2) + Math.pow(t[1][1] - t[0][1], 2));
+      t[2] = vec2(t[0][0] + (t[1][1] - t[0][1]) * d/length, t[0][1] - (t[1][0] - t[0][0]) * d/length);
+      t[3] = vec2(t[1][0] + (t[1][1] - t[0][1]) * d/length, t[1][1] - (t[1][0] - t[0][0]) * d/length);
     }
     
     canvas.addEventListener("mousedown", function(event){
@@ -271,11 +245,11 @@ function init() {
             for(var i=0; i<2; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
             index += maxpoints; // choose index that is  >= points for render iteration
           } else if (thickness == "medium") {
-            drawThick(0.00001);
+            drawThick(0.0015);
             for (var i =0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
             index += maxpoints;
           } else if (thickness == "thick") {
-            drawThick(0.00004);
+            drawThick(0.003);
             for (var i =0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
             index += maxpoints;
           }
