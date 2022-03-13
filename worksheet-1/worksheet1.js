@@ -30,7 +30,9 @@ var state;  // Object shape state
 var pointstate = 0;  // current point state
 var thickness = "medium"; // Line thickness
 var animation; // Animation type
-var direction;
+var counterclockwise; // Rotation direction
+var vertical; // Translation direction (vertical / horizontal)
+var positiveDirection; // Translation direction (positive / negative)
 var polygonnum;
 
 var program_line;
@@ -50,6 +52,9 @@ var colorLoc;
 
 var theta = 0.0;
 var thetaLoc;
+
+var translation = vec2(0.0, 0.0);
+var translationLoc;
 
 init();
 
@@ -86,8 +91,6 @@ function init() {
     program_square = initShaders(gl, "vertex-shader", "fragment-shader");
     program_pentagon = initShaders(gl, "vertex-shader", "fragment-shader");
 
-    //gl.useProgram( program );
-
     // initialize VBO for each shapes
     initvBuffer();
     
@@ -105,8 +108,6 @@ function init() {
     var positionLoc_pentagon = gl.getAttribLocation(program_pentagon, "aPosition");
     gl.vertexAttribPointer(positionLoc_pentagon, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(positionLoc_pentagon);
-
-    //thetaLoc = gl.getUniformLocation(program, "uTheta");
     
     // Buffer for colors
     cBuffer = gl.createBuffer();
@@ -205,26 +206,28 @@ function init() {
     //Animation toggle
     document.getElementById("clockwise").addEventListener("click", function() {
       animation = "rotation";
-      direction = false;
+      counterclockwise = false;
     });
     document.getElementById("counterclockwise").addEventListener("click", function() {
       animation = "rotation";
-      direction = true;
+      counterclockwise = true;
     });
     document.getElementById("down-up").addEventListener("click", function() {
-      //
+      animation = "translation";
+      vertical = true;
     });
     document.getElementById("left-right").addEventListener("click", function() {
-      //
+      animation = "translation";
+      vertical = false;
     });
     document.getElementById("zoom-in").addEventListener("click", function() {
-      //
+      animation = "scaling";
     });
     document.getElementById("zoom-out").addEventListener("click", function() {
-      //
+      animation = "scaling";
     });
     document.getElementById("pause").addEventListener("click", function() {
-      //
+      animation = "";
     });
 
     // Create 2 lines to make thicker lines
@@ -358,10 +361,27 @@ function render() {
   // render shape berdasarkan programnya masing-masing
   gl.useProgram( program_line );
   thetaLoc = gl.getUniformLocation(program_line, "uTheta");
+  translationLoc = gl.getUniformLocation(program_line, "uTranslation");
   if (animation == "rotation") {
-    theta += (direction ? 0.1 : -0.1);
+    theta += (counterclockwise ? 0.1 : -0.1);
+  } else if (animation == "translation") {
+    if (vertical) {
+      translation[1] += (positiveDirection ? 0.01 : -0.01);
+      if (translation[1] > 0.5 || translation[1] < -0.5) {
+        positiveDirection = !positiveDirection;
+      }
+    } else {
+      translation[0] += (positiveDirection ? 0.01 : -0.01);
+      if (translation[0] > 0.5 || translation[0] < -0.5) {
+        positiveDirection = !positiveDirection;
+      }
+    }
+    if (translation[1] > 1 || translation[1] < -1) {
+      positiveDirection = !positiveDirection;
+    }
   }
   gl.uniform1f(thetaLoc, theta);
+  gl.uniform2f(translationLoc, translation[0], translation[1]);
   gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_line );
   gl.vertexAttribPointer( positionLoc_line, 2, gl.FLOAT, false, 0, 0 );
   gl.enableVertexAttribArray( positionLoc_line );
@@ -370,10 +390,27 @@ function render() {
 
   gl.useProgram( program_triangle );
   thetaLoc = gl.getUniformLocation(program_triangle, "uTheta");
+  translationLoc = gl.getUniformLocation(program_triangle, "uTranslation");
   if (animation == "rotation") {
-    theta += (direction ? 0.1 : -0.1);
+    theta += (counterclockwise ? 0.1 : -0.1);
+  } else if (animation == "translation") {
+    if (vertical) {
+      translation[1] += (positiveDirection ? 0.01 : -0.01);
+      if (translation[1] > 0.5 || translation[1] < -0.5) {
+        positiveDirection = !positiveDirection;
+      }
+    } else {
+      translation[0] += (positiveDirection ? 0.01 : -0.01);
+      if (translation[0] > 0.5 || translation[0] < -0.5) {
+        positiveDirection = !positiveDirection;
+      }
+    }
+    if (translation[1] > 1 || translation[1] < -1) {
+      positiveDirection = !positiveDirection;
+    }
   }
   gl.uniform1f(thetaLoc, theta);
+  gl.uniform2f(translationLoc, translation[0], translation[1]);
   gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_triangle );
   gl.vertexAttribPointer( positionLoc_triangle, 2, gl.FLOAT, false, 0, 0 );
   gl.enableVertexAttribArray( positionLoc_triangle );
@@ -381,10 +418,27 @@ function render() {
 
   gl.useProgram( program_square );
   thetaLoc = gl.getUniformLocation(program_square, "uTheta");
+  translationLoc = gl.getUniformLocation(program_square, "uTranslation");
   if (animation == "rotation") {
-    theta += (direction ? 0.1 : -0.1);
+    theta += (counterclockwise ? 0.1 : -0.1);
+  } else if (animation == "translation") {
+    if (vertical) {
+      translation[1] += (positiveDirection ? 0.01 : -0.01);
+      if (translation[1] > 0.5 || translation[1] < -0.5) {
+        positiveDirection = !positiveDirection;
+      }
+    } else {
+      translation[0] += (positiveDirection ? 0.01 : -0.01);
+      if (translation[0] > 0.5 || translation[0] < -0.5) {
+        positiveDirection = !positiveDirection;
+      }
+    }
+    if (translation[1] > 1 || translation[1] < -1) {
+      positiveDirection = !positiveDirection;
+    }
   }
   gl.uniform1f(thetaLoc, theta);
+  gl.uniform2f(translationLoc, translation[0], translation[1]);
   gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_square );
   gl.vertexAttribPointer( positionLoc_square, 2, gl.FLOAT, false, 0, 0 );
   gl.enableVertexAttribArray( positionLoc_square );
@@ -392,10 +446,24 @@ function render() {
   
   gl.useProgram( program_pentagon );
   thetaLoc = gl.getUniformLocation(program_pentagon, "uTheta");
+  translationLoc = gl.getUniformLocation(program_pentagon, "uTranslation");
   if (animation == "rotation") {
-    theta += (direction ? 0.1 : -0.1);
+    theta += (counterclockwise ? 0.1 : -0.1);
+  } else if (animation == "translation") {
+    if (vertical) {
+      translation[1] += (positiveDirection ? 0.01 : -0.01);
+      if (translation[1] > 0.5 || translation[1] < -0.5) {
+        positiveDirection = !positiveDirection;
+      }
+    } else {
+      translation[0] += (positiveDirection ? 0.01 : -0.01);
+      if (translation[0] > 0.5 || translation[0] < -0.5) {
+        positiveDirection = !positiveDirection;
+      }
+    }
   }
   gl.uniform1f(thetaLoc, theta);
+  gl.uniform2f(translationLoc, translation[0], translation[1]);
   gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_pentagon );
   gl.vertexAttribPointer( positionLoc_pentagon, 2, gl.FLOAT, false, 0, 0 );
   gl.enableVertexAttribArray( positionLoc_pentagon );
