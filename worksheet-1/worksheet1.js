@@ -224,7 +224,7 @@ function init() {
             for(var i=0; i<2; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
             index += maxpoints; // choose index that is  >= points for render iteration
           } else if (thickness == "medium") {
-            drawThick(0.00002);
+            drawThick(0.00001);
             for (var i =0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
             index += maxpoints;
           } else if (thickness == "thick") {
