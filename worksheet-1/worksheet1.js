@@ -51,12 +51,15 @@ var positionLoc_pentagon;
 var cBuffer;
 var colorLoc;
 
+// Rotation variable
 var theta = 0.0;
 var thetaLoc;
 
+// Translation variable
 var translation = vec2(0.0, 0.0);
 var translationLoc;
 
+// Scaling variable
 var scale = 1;
 var scaleLoc;
 
@@ -156,7 +159,7 @@ function init() {
     });
     
     document.getElementById("clear").addEventListener("click",function() {
-      // reinitialize every VBO to clear canvas
+      // reinitialize every VBO to clear canvas, stop animation when canvas is cleared
       initvBuffer();
       animation = "";
     });
@@ -219,7 +222,8 @@ function init() {
       animation = "";
     });
 
-    // Create 2 lines to make thicker lines
+    // Create 2 parallel lines to make thicker lines
+    // d is the distance between the 2 parallel lines
     function drawThick(d) {
       var length = Math.sqrt(Math.pow(t[1][0] - t[0][0], 2) + Math.pow(t[1][1] - t[0][1], 2));
       t[2] = vec2(t[0][0] + (t[1][1] - t[0][1]) * d/length, t[0][1] - (t[1][0] - t[0][0]) * d/length);
@@ -244,10 +248,12 @@ function init() {
             for(var i=0; i<2; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
             index += maxpoints; // choose index that is  >= points for render iteration
           } else if (thickness == "medium") {
+            // draw 2 lines for medium thickness
             drawThick(0.001);
             for (var i =0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
             index += maxpoints;
           } else if (thickness == "thick") {
+            // draw 2 lines for thick thickness, farther apart from each other than the medium lines
             drawThick(0.002);
             for (var i =0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
             index += maxpoints;
@@ -338,6 +344,7 @@ function render() {
   gl.clear( gl.COLOR_BUFFER_BIT );
 
   // render shape berdasarkan programnya masing-masing
+  // use uniforms to transform shape object in animation
   gl.useProgram( program_line );
   thetaLoc = gl.getUniformLocation(program_line, "uTheta");
   translationLoc = gl.getUniformLocation(program_line, "uTranslation");
