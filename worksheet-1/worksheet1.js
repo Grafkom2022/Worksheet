@@ -33,6 +33,7 @@ var animation; // Animation type
 var counterclockwise; // Rotation direction
 var vertical; // Translation direction (vertical / horizontal)
 var positiveDirection; // Translation direction (positive / negative)
+var scaleUp; // Scale objects up/down
 var polygonnum;
 
 var program_line;
@@ -55,6 +56,9 @@ var thetaLoc;
 
 var translation = vec2(0.0, 0.0);
 var translationLoc;
+
+var scale = 1;
+var scaleLoc;
 
 init();
 
@@ -222,9 +226,11 @@ function init() {
     });
     document.getElementById("zoom-in").addEventListener("click", function() {
       animation = "scaling";
+      scaleUp = true;
     });
     document.getElementById("zoom-out").addEventListener("click", function() {
       animation = "scaling";
+      scaleUp = false;
     });
     document.getElementById("pause").addEventListener("click", function() {
       animation = "";
@@ -362,6 +368,7 @@ function render() {
   gl.useProgram( program_line );
   thetaLoc = gl.getUniformLocation(program_line, "uTheta");
   translationLoc = gl.getUniformLocation(program_line, "uTranslation");
+  scaleLoc = gl.getUniformLocation(program_line, "uScale");
   if (animation == "rotation") {
     theta += (counterclockwise ? 0.1 : -0.1);
   } else if (animation == "translation") {
@@ -379,9 +386,12 @@ function render() {
     if (translation[1] > 1 || translation[1] < -1) {
       positiveDirection = !positiveDirection;
     }
+  } else if (animation == "scaling")  {
+    scale += (scaleUp ? 0.01 : -0.01);
   }
   gl.uniform1f(thetaLoc, theta);
   gl.uniform2f(translationLoc, translation[0], translation[1]);
+  gl.uniform1f(scaleLoc, scale);
   gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_line );
   gl.vertexAttribPointer( positionLoc_line, 2, gl.FLOAT, false, 0, 0 );
   gl.enableVertexAttribArray( positionLoc_line );
@@ -391,8 +401,9 @@ function render() {
   gl.useProgram( program_triangle );
   thetaLoc = gl.getUniformLocation(program_triangle, "uTheta");
   translationLoc = gl.getUniformLocation(program_triangle, "uTranslation");
+  scaleLoc = gl.getUniformLocation(program_triangle, "uScale");
   if (animation == "rotation") {
-    theta += (counterclockwise ? 0.1 : -0.1);
+    theta += (counterclockwise ? 0.01 : -0.01);
   } else if (animation == "translation") {
     if (vertical) {
       translation[1] += (positiveDirection ? 0.01 : -0.01);
@@ -408,9 +419,12 @@ function render() {
     if (translation[1] > 1 || translation[1] < -1) {
       positiveDirection = !positiveDirection;
     }
+  } else if (animation == "scaling")  {
+    scale += (scaleUp ? 0.01 : -0.01);
   }
   gl.uniform1f(thetaLoc, theta);
   gl.uniform2f(translationLoc, translation[0], translation[1]);
+  gl.uniform1f(scaleLoc, scale);
   gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_triangle );
   gl.vertexAttribPointer( positionLoc_triangle, 2, gl.FLOAT, false, 0, 0 );
   gl.enableVertexAttribArray( positionLoc_triangle );
@@ -419,6 +433,7 @@ function render() {
   gl.useProgram( program_square );
   thetaLoc = gl.getUniformLocation(program_square, "uTheta");
   translationLoc = gl.getUniformLocation(program_square, "uTranslation");
+  scaleLoc = gl.getUniformLocation(program_square, "uScale");
   if (animation == "rotation") {
     theta += (counterclockwise ? 0.1 : -0.1);
   } else if (animation == "translation") {
@@ -436,9 +451,12 @@ function render() {
     if (translation[1] > 1 || translation[1] < -1) {
       positiveDirection = !positiveDirection;
     }
+  } else if (animation == "scaling")  {
+    scale += (scaleUp ? 0.01 : -0.01);
   }
   gl.uniform1f(thetaLoc, theta);
   gl.uniform2f(translationLoc, translation[0], translation[1]);
+  gl.uniform1f(scaleLoc, scale);
   gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_square );
   gl.vertexAttribPointer( positionLoc_square, 2, gl.FLOAT, false, 0, 0 );
   gl.enableVertexAttribArray( positionLoc_square );
@@ -447,6 +465,7 @@ function render() {
   gl.useProgram( program_pentagon );
   thetaLoc = gl.getUniformLocation(program_pentagon, "uTheta");
   translationLoc = gl.getUniformLocation(program_pentagon, "uTranslation");
+  scaleLoc = gl.getUniformLocation(program_pentagon, "uScale");
   if (animation == "rotation") {
     theta += (counterclockwise ? 0.1 : -0.1);
   } else if (animation == "translation") {
@@ -461,9 +480,12 @@ function render() {
         positiveDirection = !positiveDirection;
       }
     }
+  } else if (animation == "scaling")  {
+    scale += (scaleUp ? 0.01 : -0.01);
   }
   gl.uniform1f(thetaLoc, theta);
   gl.uniform2f(translationLoc, translation[0], translation[1]);
+  gl.uniform1f(scaleLoc, scale);
   gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_pentagon );
   gl.vertexAttribPointer( positionLoc_pentagon, 2, gl.FLOAT, false, 0, 0 );
   gl.enableVertexAttribArray( positionLoc_pentagon );

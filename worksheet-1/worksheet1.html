@@ -130,6 +130,7 @@ in vec4 aPosition;
 in vec4 aColor;
 uniform float uTheta;
 uniform vec2 uTranslation;
+uniform float uScale;
 out vec4 vColor;
 
 void main()
@@ -138,8 +139,8 @@ void main()
     float s = sin(uTheta);
     float c = cos(uTheta);
 
-    gl_Position.x = -s*aPosition.y + c*aPosition.x + uTranslation.x;
-    gl_Position.y =  s*aPosition.x + c*aPosition.y + uTranslation.y;
+    gl_Position.x = uScale * (-s*aPosition.y + c*aPosition.x + uTranslation.x);
+    gl_Position.y =  uScale * (s*aPosition.x + c*aPosition.y + uTranslation.y);
     gl_Position.z = 0.0;
     gl_Position.w = 1.0;
     gl_PointSize = 10.0;
