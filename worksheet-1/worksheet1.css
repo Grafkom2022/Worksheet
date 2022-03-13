@@ -1,7 +1,7 @@
 .icon-input-btn, .color-selector input[type="button"], #clear{
     display: inline-block;
     position: relative;
-    margin: 0.5rem;
+    margin: 0.25rem;
 }
 .icon-input-btn input[type="button"], .color-selector input[type="button"]{
     padding: 0.5rem 1rem;
@@ -12,15 +12,32 @@
     left: 30%;
     top: 30%;
 }
+.background{
+    background-color: #202020;
+}
+.container{
+    padding: 0.5em 0;
+}
+.selector-label{
+    color: white;
+    margin: 0.25rem;
+}
+.btn-primary{
+    background-color: #202020;
+}
 .thickness-selector input[type="button"]{
-    margin: 0.5rem;
-    font-size: 1.5rem;
+    margin: 0.25rem;
+    font-size: 1rem;
+}
+.col-1 input[type="button"]{
+    width: 100%;
+    margin: 0.25rem;
 }
 #thin-line{
     font-weight: lighter;
 }
 #medium-line{
-    font-weight: bolder;
+    font-weight: 600;
 }
 #thick-line{
     font-weight: 1000;
