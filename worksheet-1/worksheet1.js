@@ -8,7 +8,7 @@ var gl;
 var maxNumTriangles = 200;
 var maxNumPositions  = 3*maxNumTriangles;
 var index = 0;
-var first = true;
+var maxpoints = 8;  //  specify max point for every object, multiple of 2
 
 var t = [];
 
@@ -22,153 +22,458 @@ var colors = [
     vec4(0.0, 0.0, 1.0, 1.0),  // blue
     vec4(1.0, 0.0, 1.0, 1.0),  // magenta
     vec4(0.0, 1.0, 1.0, 1.0),   // cyan
-    vec4(0.8, 0.8, 0.8, 1.0)    // default
+    vec4(0.5, 0.0, 0.5, 1.0),    // purple
+    vec4(0.0, 0.5, 0.5, 1.0),    // teal
+    vec4(0.5, 0.5, 0.0, 1.0),    // olive
 ];
-var state;
+var state;  // Object shape state
+var pointstate = 0;  // current point state
+var thickness = "medium"; // Line thickness
+var animation; // Animation type
+var counterclockwise; // Rotation direction
+var vertical; // Translation direction (vertical / horizontal)
+var positiveDirection; // Translation direction (positive / negative)
+var scaleUp; // Scale objects up/down
+var polygonnum;
+
+var program_line;
+var program_triangle;
+var program_square;
+var program_pentagon;
+var vBuffer_line;
+var vBuffer_triangle;
+var vBuffer_square;
+var vBuffer_pentagon;
+var positionLoc_line;
+var positionLoc_triangle;
+var positionLoc_square;
+var positionLoc_pentagon;
+var cBuffer;
+var colorLoc;
+
+// Rotation variable
+var theta = 0.0;
+var thetaLoc;
+
+// Translation variable
+var translation = vec2(0.0, 0.0);
+var translationLoc;
+
+// Scaling variable
+var scale = 1;
+var scaleLoc;
 
 init();
 
+// initialize VBO
+function initvBuffer() {
+  vBuffer_line = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer_line);
+  gl.bufferData(gl.ARRAY_BUFFER, 8*maxNumPositions, gl.STATIC_DRAW);
+  vBuffer_triangle = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer_triangle);
+  gl.bufferData(gl.ARRAY_BUFFER, 8*maxNumPositions, gl.STATIC_DRAW);
+  vBuffer_square = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer_square);
+  gl.bufferData(gl.ARRAY_BUFFER, 8*maxNumPositions, gl.STATIC_DRAW);
+  vBuffer_pentagon = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer_pentagon);
+  gl.bufferData(gl.ARRAY_BUFFER, 8*maxNumPositions, gl.STATIC_DRAW);
+}
+
 function init() {
     canvas = document.getElementById("gl-canvas");
-
     gl = canvas.getContext('webgl2');
     if (!gl) alert("WebGL 2.0 isn't available");
 
-    gl.viewport(0, 0, canvas.width, canvas.height);
-    gl.clearColor(0.8, 0.8, 0.8, 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-
+    gl.viewport(0, 0, canvas.width, canvas.height); // set the canvas viewport
+    gl.clearColor(1.0, 1.0, 1.0, 1.0);  // set the canvas color
+    gl.clear(gl.COLOR_BUFFER_BIT);  // clear the color buffer
 
     //
     //  Load shaders and initialize attribute buffers
     //
-    var program = initShaders(gl, "vertex-shader", "fragment-shader");
-    gl.useProgram(program);
+    program_line = initShaders(gl, "vertex-shader", "fragment-shader");
+    program_triangle = initShaders(gl, "vertex-shader", "fragment-shader");
+    program_square = initShaders(gl, "vertex-shader", "fragment-shader");
+    program_pentagon = initShaders(gl, "vertex-shader", "fragment-shader");
 
-
-    var vBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, 8*maxNumPositions, gl.STATIC_DRAW);
-
-    var positionLoc = gl.getAttribLocation( program, "aPosition");
-    gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(positionLoc);
-
-    var cBuffer = gl.createBuffer();
+    // initialize VBO for each shapes
+    initvBuffer();
+    
+    // Can set this one as empty value(?) but still work
+    // retrieve position location and enable vertex
+    var positionLoc_line = gl.getAttribLocation(program_line, "aPosition");
+    gl.vertexAttribPointer(positionLoc_line, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(positionLoc_line);
+    var positionLoc_triangle = gl.getAttribLocation(program_triangle, "aPosition");
+    gl.vertexAttribPointer(positionLoc_triangle, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(positionLoc_triangle);
+    var positionLoc_square = gl.getAttribLocation(program_square, "aPosition");
+    gl.vertexAttribPointer(positionLoc_square, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(positionLoc_square);
+    var positionLoc_pentagon = gl.getAttribLocation(program_pentagon, "aPosition");
+    gl.vertexAttribPointer(positionLoc_pentagon, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(positionLoc_pentagon);
+    
+    // Buffer for colors
+    cBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, 16*maxNumPositions, gl.STATIC_DRAW );
-
-    var colorLoc = gl.getAttribLocation( program, "aColor");
-    gl.vertexAttribPointer(colorLoc, 4, gl.FLOAT, false, 0, 0);
+    
+    // Points to color palette
+    colorLoc = gl.getAttribLocation( program_line, "aColor");
+    gl.vertexAttribPointer(colorLoc, 4 /* read vec4 values */, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(colorLoc);
 
-    var m = document.getElementById("mymenu");
-
-    m.addEventListener("click", function() {
-      cIndex = m.selectedIndex;
+    // Color toggle
+    document.getElementById("black").addEventListener("click",function() {
+      cIndex = 0;
     });
-    var clear = document.getElementById("clear");
+    document.getElementById("red").addEventListener("click",function() {
+      cIndex = 1;
+    });
+    document.getElementById("yellow").addEventListener("click",function() {
+      cIndex = 2;
+    });
+    document.getElementById("green").addEventListener("click",function() {
+      cIndex = 3;
+    });
+    document.getElementById("blue").addEventListener("click",function() {
+      cIndex = 4;
+    });
+    document.getElementById("magenta").addEventListener("click",function() {
+      cIndex = 5;
+    });
+    document.getElementById("cyan").addEventListener("click",function() {
+      cIndex = 6;
+    });
+    document.getElementById("purple").addEventListener("click",function() {
+      cIndex = 7;
+    });
+    document.getElementById("teal").addEventListener("click",function() {
+      cIndex = 8;
+    });
+    document.getElementById("olive").addEventListener("click",function() {
+      cIndex = 9;
+    });
     
-    clear.addEventListener("click",function() {
-      console.log("ClearEventListener");
-      gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer);
-      t[0] = vec2(-1,1);
-      t[2] = vec2(1,-1);
-      t[1] = vec2(t[0][0], t[2][1]);
-      t[3] = vec2(t[2][0], t[0][1]);
-      for(var i=0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
-      index += 4;
-      console.log(t);
-      
-      gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer);
-      var tt = vec4(colors[7]);
-      for(var i=0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 16*(index-4+i), flatten(tt));
-      render();
-      function render() {
-        gl.clear( gl.COLOR_BUFFER_BIT );
-          for(var i = 0; i<index; i+=4)
-              gl.drawArrays( gl.TRIANGLE_FAN, i, 4 );
-          requestAnimationFrame(render);
-      }
+    document.getElementById("clear").addEventListener("click",function() {
+      // reinitialize every VBO to clear canvas, stop animation when canvas is cleared
+      initvBuffer();
+      animation = "";
     });
 
-    // Object Shape
+    // Shape toggle
     document.getElementById("line").addEventListener("click",function() {
-      if (state != "line") {
-        state = "line";
-        linefunction(vBuffer,cBuffer);
-        console.log("State change to "+state);
-      }
+      pointstate = 0;
+      state = "line";
     });
     document.getElementById("triangle").addEventListener("click",function() {
-      if (state != "triangle") {
-        state = "triangle";
-        trianglefunction(vBuffer,cBuffer);
-        console.log("State change to "+state);
-      }
+      pointstate = 0;
+      state = "triangle";
     });
     document.getElementById("square").addEventListener("click",function() {
-      if (state != "square") {
-        state = "square";
-        squarefunction(vBuffer,cBuffer);
-        console.log("State change to "+state);
-      }
+      pointstate = 0;
+      state = "square";
     });
+    document.getElementById("pentagon").addEventListener("click",function() {
+      pointstate = 0;
+      state = "pentagon";
+    });
+
+    // Thickness toggle
+    document.getElementById("thin-line").addEventListener("click", function() {
+      thickness = "thin";
+    });
+    document.getElementById("medium-line").addEventListener("click", function() {
+      thickness = "medium";
+    });
+    document.getElementById("thick-line").addEventListener("click", function() {
+      thickness = "thick";
+    });
+
+    //Animation toggle
+    document.getElementById("clockwise").addEventListener("click", function() {
+      animation = "rotation";
+      counterclockwise = false;
+    });
+    document.getElementById("counterclockwise").addEventListener("click", function() {
+      animation = "rotation";
+      counterclockwise = true;
+    });
+    document.getElementById("down-up").addEventListener("click", function() {
+      animation = "translation";
+      vertical = true;
+    });
+    document.getElementById("left-right").addEventListener("click", function() {
+      animation = "translation";
+      vertical = false;
+    });
+    document.getElementById("zoom-in").addEventListener("click", function() {
+      animation = "scaling";
+      scaleUp = true;
+    });
+    document.getElementById("zoom-out").addEventListener("click", function() {
+      animation = "scaling";
+      scaleUp = false;
+    });
+    document.getElementById("pause").addEventListener("click", function() {
+      animation = "";
+    });
+
+    // Create 2 parallel lines to make thicker lines
+    // d is the distance between the 2 parallel lines
+    function drawThick(d) {
+      var length = Math.sqrt(Math.pow(t[1][0] - t[0][0], 2) + Math.pow(t[1][1] - t[0][1], 2));
+      t[2] = vec2(t[0][0] + (t[1][1] - t[0][1]) * d/length, t[0][1] - (t[1][0] - t[0][0]) * d/length);
+      t[3] = vec2(t[1][0] + (t[1][1] - t[0][1]) * d/length, t[1][1] - (t[1][0] - t[0][0]) * d/length);
+    }
     
     canvas.addEventListener("mousedown", function(event){
       if (state == "line") {
-        
-      } else if (state == "square") {
-        gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer);
-        if(first) {
-          // set up vectors to create an image
-          first = false;
-          gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer)
+        gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_line);
+        if(pointstate == 0) {
+          // create start point
+          pointstate = 1;
+          gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_line)
           t[0] = vec2(2*event.clientX/canvas.width-1,
             2*(canvas.height-event.clientY)/canvas.height-1);
-          console.log(t);
+        } else {
+          // create last point
+          pointstate = 0;
+          t[1] = vec2(2*event.clientX/canvas.width-1,
+            2*(canvas.height-event.clientY)/canvas.height-1);
+          if (thickness == "thin") {
+            for(var i=0; i<2; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
+            index += maxpoints; // choose index that is  >= points for render iteration
+          } else if (thickness == "medium") {
+            // draw 2 lines for medium thickness
+            drawThick(0.001);
+            for (var i =0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
+            index += maxpoints;
+          } else if (thickness == "thick") {
+            // draw 2 lines for thick thickness, farther apart from each other than the medium lines
+            drawThick(0.002);
+            for (var i =0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
+            index += maxpoints;
+          }
+          // load colors to buffer
+          gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer);
+          var tt = vec4(colors[cIndex]);
+          for(var i=0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 16*(index-maxpoints+i), flatten(tt));
         }
+      } else if (state == "triangle") {
+        gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_triangle);
+        if(pointstate < 2) {
+          gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_triangle); 
+          // create first 2 points
+          t[pointstate] = vec2(2*event.clientX/canvas.width-1,
+            2*(canvas.height-event.clientY)/canvas.height-1);
+            pointstate++;
+        } else {
+          // create last point
+          t[pointstate] = vec2(2*event.clientX/canvas.width-1,
+            2*(canvas.height-event.clientY)/canvas.height-1);
+          pointstate=0;
+          
+          // load points to buffer
+          for(var i=0; i<3; i++){
+            gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
+          }
+          index += maxpoints; // choose index that is  >= points for render iteration
     
-        else {
-          // set end points of rectangle
-          first = true;
+          // load colors to buffer
+          gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer);
+          var tt = vec4(colors[cIndex]);
+          for(var i=0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 16*(index-maxpoints+i), flatten(tt));
+        }
+      } else if (state == "square") {
+        gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_square);
+        if(pointstate == 0) {
+          pointstate = 1;
+          gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_square)
+          t[0] = vec2(2*event.clientX/canvas.width-1,
+            2*(canvas.height-event.clientY)/canvas.height-1);
+        } else {
+          pointstate = 0;
           t[2] = vec2(2*event.clientX/canvas.width-1,
             2*(canvas.height-event.clientY)/canvas.height-1);
           t[1] = vec2(t[0][0], t[2][1]);
           t[3] = vec2(t[2][0], t[0][1]);
-          // create image
           for(var i=0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
-          index += 4;
-    
-          // adding colors
+          index += maxpoints; // choose index that is  >= points for render iteration
+
           gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer);
           var tt = vec4(colors[cIndex]);
-          for(var i=0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 16*(index-4+i), flatten(tt));
-          console.log(t);
+          for(var i=0; i<4; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 16*(index-maxpoints+i), flatten(tt));
         }
+      } else if (state == "pentagon") {
+        gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_pentagon);
+        if(pointstate < 4) {
+          gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_pentagon); 
+          // create first 4 points
+          t[pointstate] = vec2(2*event.clientX/canvas.width-1,
+            2*(canvas.height-event.clientY)/canvas.height-1);
+            pointstate++;
+        } else {
+          // create last point
+          t[pointstate] = vec2(2*event.clientX/canvas.width-1,
+            2*(canvas.height-event.clientY)/canvas.height-1);
+          pointstate=0;
+          
+          // load points to buffer
+          for(var i=0; i<5; i++){
+            gl.bufferSubData(gl.ARRAY_BUFFER, 8*(index+i), flatten(t[i]));
+          }
+          index += maxpoints; // choose index that is  >= points for render iteration
+    
+          // load colors to buffer
+          gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer);
+          var tt = vec4(colors[cIndex]);
+          for(var i=0; i<5; i++) gl.bufferSubData(gl.ARRAY_BUFFER, 16*(index-maxpoints  +i), flatten(tt));
+        }
+      } else {
+        $("#myToast").toast("show");
       }
     });
+    render();
     
 }
+function render() {
+  gl.clear( gl.COLOR_BUFFER_BIT );
 
+  // render shape berdasarkan programnya masing-masing
+  // use uniforms to transform shape object in animation
+  gl.useProgram( program_line );
+  thetaLoc = gl.getUniformLocation(program_line, "uTheta");
+  translationLoc = gl.getUniformLocation(program_line, "uTranslation");
+  scaleLoc = gl.getUniformLocation(program_line, "uScale");
+  if (animation == "rotation") {
+    theta += (counterclockwise ? 0.1 : -0.1);
+  } else if (animation == "translation") {
+    if (vertical) {
+      translation[1] += (positiveDirection ? 0.01 : -0.01);
+      if (translation[1] > 0.5 || translation[1] < -0.5) {
+        positiveDirection = !positiveDirection;
+      }
+    } else {
+      translation[0] += (positiveDirection ? 0.01 : -0.01);
+      if (translation[0] > 0.5 || translation[0] < -0.5) {
+        positiveDirection = !positiveDirection;
+      }
+    }
+    if (translation[1] > 1 || translation[1] < -1) {
+      positiveDirection = !positiveDirection;
+    }
+  } else if (animation == "scaling")  {
+    scale += (scaleUp ? 0.01 : -0.01);
+  }
+  gl.uniform1f(thetaLoc, theta);
+  gl.uniform2f(translationLoc, translation[0], translation[1]);
+  gl.uniform1f(scaleLoc, scale);
+  gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_line );
+  gl.vertexAttribPointer( positionLoc_line, 2, gl.FLOAT, false, 0, 0 );
+  gl.enableVertexAttribArray( positionLoc_line );
+  for(var i = 0; i<index; i+=maxpoints) gl.drawArrays( gl.LINES, i, 2 );
+  for(var i = 0; i<index; i+=maxpoints) gl.drawArrays( gl.LINES, i + 2, 4 );
 
-function linefunction(vBuffer,cBuffer) {
-  render();
-  function render() {
-    gl.clear( gl.COLOR_BUFFER_BIT );
-      for(var i = 0; i<index; i+=4)
-          gl.drawArrays( gl.TRIANGLE_FAN, i, 4 );
-      requestAnimationFrame(render);
+  gl.useProgram( program_triangle );
+  thetaLoc = gl.getUniformLocation(program_triangle, "uTheta");
+  translationLoc = gl.getUniformLocation(program_triangle, "uTranslation");
+  scaleLoc = gl.getUniformLocation(program_triangle, "uScale");
+  if (animation == "rotation") {
+    theta += (counterclockwise ? 0.01 : -0.01);
+  } else if (animation == "translation") {
+    if (vertical) {
+      translation[1] += (positiveDirection ? 0.01 : -0.01);
+      if (translation[1] > 0.5 || translation[1] < -0.5) {
+        positiveDirection = !positiveDirection;
+      }
+    } else {
+      translation[0] += (positiveDirection ? 0.01 : -0.01);
+      if (translation[0] > 0.5 || translation[0] < -0.5) {
+        positiveDirection = !positiveDirection;
+      }
+    }
+    if (translation[1] > 1 || translation[1] < -1) {
+      positiveDirection = !positiveDirection;
+    }
+  } else if (animation == "scaling")  {
+    scale += (scaleUp ? 0.01 : -0.01);
   }
-}
-function trianglefunction(vBuffer,cBuffer) {}
-function squarefunction(vBuffer,cBuffer) {
-  render();
-  function render() {
-    gl.clear( gl.COLOR_BUFFER_BIT );
-      for(var i = 0; i<index; i+=4)
-          gl.drawArrays( gl.TRIANGLE_FAN, i, 4 );
-      requestAnimationFrame(render);
+  gl.uniform1f(thetaLoc, theta);
+  gl.uniform2f(translationLoc, translation[0], translation[1]);
+  gl.uniform1f(scaleLoc, scale);
+  gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_triangle );
+  gl.vertexAttribPointer( positionLoc_triangle, 2, gl.FLOAT, false, 0, 0 );
+  gl.enableVertexAttribArray( positionLoc_triangle );
+  for(var i = 0; i<index; i+=maxpoints) gl.drawArrays( gl.TRIANGLE_FAN, i, 3 );
+
+  gl.useProgram( program_square );
+  thetaLoc = gl.getUniformLocation(program_square, "uTheta");
+  translationLoc = gl.getUniformLocation(program_square, "uTranslation");
+  scaleLoc = gl.getUniformLocation(program_square, "uScale");
+  if (animation == "rotation") {
+    theta += (counterclockwise ? 0.1 : -0.1);
+  } else if (animation == "translation") {
+    if (vertical) {
+      translation[1] += (positiveDirection ? 0.01 : -0.01);
+      if (translation[1] > 0.5 || translation[1] < -0.5) {
+        positiveDirection = !positiveDirection;
+      }
+    } else {
+      translation[0] += (positiveDirection ? 0.01 : -0.01);
+      if (translation[0] > 0.5 || translation[0] < -0.5) {
+        positiveDirection = !positiveDirection;
+      }
+    }
+    if (translation[1] > 1 || translation[1] < -1) {
+      positiveDirection = !positiveDirection;
+    }
+  } else if (animation == "scaling")  {
+    scale += (scaleUp ? 0.01 : -0.01);
   }
+  gl.uniform1f(thetaLoc, theta);
+  gl.uniform2f(translationLoc, translation[0], translation[1]);
+  gl.uniform1f(scaleLoc, scale);
+  gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_square );
+  gl.vertexAttribPointer( positionLoc_square, 2, gl.FLOAT, false, 0, 0 );
+  gl.enableVertexAttribArray( positionLoc_square );
+  for(var i = 0; i<index; i+=maxpoints) gl.drawArrays( gl.TRIANGLE_FAN, i, 4 );
+  
+  gl.useProgram( program_pentagon );
+  thetaLoc = gl.getUniformLocation(program_pentagon, "uTheta");
+  translationLoc = gl.getUniformLocation(program_pentagon, "uTranslation");
+  scaleLoc = gl.getUniformLocation(program_pentagon, "uScale");
+  if (animation == "rotation") {
+    theta += (counterclockwise ? 0.1 : -0.1);
+  } else if (animation == "translation") {
+    if (vertical) {
+      translation[1] += (positiveDirection ? 0.01 : -0.01);
+      if (translation[1] > 0.5 || translation[1] < -0.5) {
+        positiveDirection = !positiveDirection;
+      }
+    } else {
+      translation[0] += (positiveDirection ? 0.01 : -0.01);
+      if (translation[0] > 0.5 || translation[0] < -0.5) {
+        positiveDirection = !positiveDirection;
+      }
+    }
+  } else if (animation == "scaling")  {
+    scale += (scaleUp ? 0.01 : -0.01);
+  }
+  gl.uniform1f(thetaLoc, theta);
+  gl.uniform2f(translationLoc, translation[0], translation[1]);
+  gl.uniform1f(scaleLoc, scale);
+  gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer_pentagon );
+  gl.vertexAttribPointer( positionLoc_pentagon, 2, gl.FLOAT, false, 0, 0 );
+  gl.enableVertexAttribArray( positionLoc_pentagon );
+  for(var i = 0; i<index; i+=maxpoints) gl.drawArrays( gl.TRIANGLE_FAN, i, 5 );
+        
+  setTimeout(
+    function () {requestAnimationFrame(render);},
+    100
+  );
 }
 

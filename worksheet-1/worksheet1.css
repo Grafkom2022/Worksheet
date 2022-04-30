@@ -1,0 +1,98 @@
+.icon-input-btn, .color-selector input[type="button"], #clear{
+    display: inline-block;
+    position: relative;
+    margin: 0.25rem;
+}
+.icon-input-btn input[type="button"], .color-selector input[type="button"]{
+    padding: 0.5rem 1rem;
+}
+.icon-input-btn i{
+    display: inline-block;
+    position: absolute;
+    left: 30%;
+    top: 30%;
+}
+.background{
+    background-color: #202020;
+}
+.container{
+    padding: 0.5em 0;
+}
+.selector-label{
+    color: white;
+    margin: 0.25rem;
+}
+.btn-primary{
+    background-color: #202020;
+}
+.thickness-selector input[type="button"]{
+    margin: 0.25rem;
+    font-size: 1rem;
+}
+.col-1 input[type="button"]{
+    width: 100%;
+    margin: 0.25rem;
+}
+.modal-backdrop{
+    opacity: 0 !important;
+}
+.modal-header{
+    background-color: #202020;
+    color: white;
+}
+.close, .close:hover{
+    color: white;
+}
+li{
+    font-size: 0.9em;
+}
+#myToast{
+    left: 50%;
+    bottom: 0.25rem;
+    position: fixed;
+    transform: translate(-50%, 0px);
+    z-index: 9999;
+}
+.toast-body{
+    background-color: #202020;
+    color: white;
+}
+#thin-line{
+    font-weight: lighter;
+}
+#medium-line{
+    font-weight: 600;
+}
+#thick-line{
+    font-weight: 1000;
+}
+#black{
+    background-color: black;
+}
+#red{
+    background-color: red;
+}
+#yellow{
+    background-color: yellow;
+}
+#green{
+    background-color: lime;
+}
+#blue{
+    background-color: blue;
+}
+#magenta{
+    background-color: magenta;
+}
+#cyan{
+    background-color: cyan;
+}
+#purple{
+    background-color: purple;
+}
+#teal{
+    background-color: teal;
+}
+#olive{
+    background-color: olive;
+}
