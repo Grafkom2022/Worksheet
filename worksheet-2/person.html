@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <link rel="stylesheet" href="layoutHorse.css">
+    <link rel="stylesheet" href="layoutPerson.css">
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
@@ -17,7 +17,7 @@
 
 <body>
     <div class="header">
-		Worksheet 2 - Horse
+		Worksheet 2 - Person
 	</div>
 	<div class="container">
 		<div class="row">
@@ -30,9 +30,16 @@
 				<div class="container">
 					<div class="container options-container">
 						<div class="row">
-                            <button type="button" class="btn btn-primary" id="run">
-                                <i class="bi bi-play"></i> / <i class="bi bi-pause"></i>
-                            </button>
+                            <div class="col">
+                                <button type="button" class="btn btn-primary" id="run">
+                                    <i class="bi bi-play"></i>
+                                </button>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="btn btn-primary" id="stop">
+                                    <i class="bi bi-pause"></i>
+                                </button>
+                            </div>
 						</div>
 					</div>
 					<div class="row credit">
@@ -120,7 +127,7 @@
 
     <script src="Common/InitShaders.js"></script>
     <script src="Common/MVnew.js"></script>
-    <script src="horse.js"></script>
+    <script src="person.js"></script>
 
 </body>
 

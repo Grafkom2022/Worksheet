@@ -1,0 +1,53 @@
+* {
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+.header {
+    font-family:'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 2em;
+    border-radius: 0.5em;
+    padding: 20px;
+    text-align: center;
+    color: #0275d8;
+    background: #93cbfc;
+    margin-bottom: 5px;
+}
+  
+.header h1 {
+    font-size: 50px;
+}
+
+.options-container {
+    margin: 1em 0;
+}
+
+.btn {
+    margin: 0.5em 0;
+    border-radius: 0.5em;
+}
+
+.credit {
+    margin-left: 0.5em;
+    font-size: small;
+    text-align: left;
+}
+
+/* Responsive layout - when the screen is less than 800px wide, make the two columns stack on top of each other instead of next to each other */
+@media screen and (max-width: 800px) {
+
+    .leftcolumn,
+    .rightcolumn {
+      width: 100%;
+      padding: 0;
+    }
+  }
+  
+  /* Responsive layout - when the screen is less than 400px wide, make the navigation links stack on top of each other instead of next to each other */
+  @media screen and (max-width: 400px) {
+    .topnav a {
+      float: none;
+      width: 100%;
+    }
+  }
